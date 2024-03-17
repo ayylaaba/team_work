@@ -7,9 +7,9 @@ std::ofstream outFile;
 std::string extension;
 
 // for parsing header;
-std::string contentType;
-std::string content_length;
-std::string transfer_encoding;
+// std::string contentType;
+// std::string content_length;
+// std::string transfer_encoding;
 server serv;
 map m;
 
@@ -77,7 +77,8 @@ bool post::post_method(std::string buffer, request req)
 {
     if (buffer.find("\r\n\r\n") != std::string::npos && f == 0)
     {
-        
+        std::cout << "======> " << req.content_type << std::endl;
+        // exit(1);
         open_unic_file(req.content_type);
         buffer = buffer.substr(buffer.find("\r\n\r\n") + 4);
         if (req.transfer_encoding == "chunked")

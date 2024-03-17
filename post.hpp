@@ -27,6 +27,7 @@ class post
     private:
         // some variables if needed;
     public:
+        int j;
         post();
         post(const post &other);
         post &operator=(const post &other);

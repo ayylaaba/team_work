@@ -15,7 +15,9 @@ void request::parse_header(std::string buffer, server &serv)
         if (line.substr(0, 14) == "Content-Length")
             content_length = line.substr(16);
         else if (line.substr(0, 12) == "Content-Type")
+        {
             content_type = line.substr(14);
+        }
         else if (line.substr(0, 17) == "Transfer-Encoding")
             transfer_encoding = line.substr(19);
         if (line == "\r")

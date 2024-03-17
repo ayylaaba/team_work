@@ -135,7 +135,12 @@ int main(int ac, char **av)
                         }
                     }
                     if (rq.method == "POST" && flag == 1)
-                        fd_maps[events[i].data.fd].post_.post_method(buffer, rq);
+                    {
+                        fd_maps[events[i].data.fd].post_.j = 0;
+                        std::cout << "ENTER\n";
+                        if (fd_maps[events[i].data.fd].post_.post_method(buffer, rq))
+                            fd_maps[events[i].data.fd].post_.j = 1;
+                    }
                     fd_maps[events[i].data.fd].requst = rq; /* // must change.*/
                     fd_maps[events[i].data.fd].u_can_send = 1; // must change.
                 }
@@ -146,6 +151,12 @@ int main(int ac, char **av)
                     respo = 0;
                     if (!fd_maps[events[i].data.fd].requst.method.compare("GET"))
                         respo = (*it_fd).second.get.get_mthod(events[i].data.fd);
+                    if (!fd_maps[events[i].data.fd].requst.method.compare("POST") && fd_maps[events[i].data.fd].post_.j)
+                    {
+                        std::string response = "HTTP/1.1 201 OK\r\nContent-Type: text/html\r\n\r\nhello";
+                        send(events[i].data.fd,response.c_str(), response.length(), 0);
+                        respo = 1;
+                    }
                     std::cout << "\t\t stat kaml wla ba9i == " << it_fd->second.rd_done << std::endl;
                     if (respo)
                     {
