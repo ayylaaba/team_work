@@ -36,6 +36,7 @@ class location
         std::string                         l_index;
         std::vector<std::string>            s;
         std::map<std::string, std::string>  cont_l;
+        std::map<std::string ,int>          duplicate;
         std::map<std::string, std::string>  key_value;
         std::vector<std::string>            l_vec;
         std::vector<std::string>            allowed_methods;
@@ -45,6 +46,7 @@ class location
         int                                 check_exist(std::string path, char ch);
         int                                 check_permi(std::string path);
         void                                print_err(std::string str);
+        void                                check_dup();
         location(std::map<std::string, std::string> &c, std::vector <std::string> &v_s);
         location();
 };

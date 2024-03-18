@@ -56,6 +56,8 @@ class server : public location
         int                                 valid_range(std::string s);
         int                                 check_permi(std::string path);
         int                                 check_exist(std::string path, char ch);
+        int                                 check_ip_nbr(std::string nbr);
+        int                                 check_ip(std::string ip);
         server(std::map<std::string, std::string> &cont_s, std::vector<location*> &l_);   
         server();
 };

@@ -14,6 +14,7 @@
 #include "request.hpp"
 #include <sys/select.h>
 #include "fd_info.hpp"
+#include "multplixing.hpp"
 
 int flag = 0;
 size_t MAX_CLIENTS = 10;
@@ -23,53 +24,17 @@ std::map<int, fd_info>  fd_maps;
 
 int main(int ac, char **av) 
 {
-    int                 serverSocket;
     server              parse;
     int                 respo;
     request             rq;
+    multplixing         mlp;
 
     if (ac < 2)
         parse.print_err("Argement Not Valid");
     
-    // system("leaks ./webserve");
-    // exit(1);
-    
     parse.mange_file(av[1]);
 
-     // Create server socket
-    if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("Socket creation failed");
-        exit(EXIT_FAILURE);
-    }
-
-    // Initialize server address structure
-    sockaddr_in serverAddr;
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(8080);
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    int sp = 1;
-    // Bind the socket
-    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR|SO_REUSEPORT, &sp, sizeof(sp));
-    if (bind(serverSocket, reinterpret_cast<struct sockaddr *>(&serverAddr), sizeof(serverAddr)) == -1) 
-    {
-        perror("Bind failed");
-        exit(EXIT_FAILURE);
-    }
-
-    // Listen for incoming connections
-    if (listen(serverSocket, 5) == -1) {
-        perror("Listen failed");
-        exit(EXIT_FAILURE);
-    }
-
-    std::cout << "Server is listening on port 8080...\n";
-
-    int epoll_fd = epoll_create(5);
-    struct epoll_event envts;
-    envts.data.fd = serverSocket;
-    envts.events = EPOLLIN;
-
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverSocket, &envts);
+    mlp.lanch_server();
 
     std::string tmp;
     int bytesRead;
@@ -81,18 +46,18 @@ int main(int ac, char **av)
         std::string buffer;
         int         client_sock;
         struct      epoll_event events[MAX_EVENTS];
-        int NumFd = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+        int NumFd = epoll_wait(mlp.epoll_fd, events, MAX_EVENTS, -1);
         for (int i = 0; i < NumFd; i++) 
         {
-            if (events[i].data.fd == serverSocket) 
+            if (events[i].data.fd == mlp.serverSocket) 
             {
                 std::cout << "connect a new client ...\n";
-                client_sock = accept(serverSocket, NULL, NULL);
+                client_sock = accept(mlp.serverSocket, NULL, NULL);
 
                 struct epoll_event envts_client;
                 envts_client.data.fd = client_sock;
                 envts_client.events = EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
-                if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_sock, &envts_client) == -1) 
+                if (epoll_ctl(mlp.epoll_fd, EPOLL_CTL_ADD, client_sock, &envts_client) == -1) 
                 {
                     close(client_sock);
                     perror("Issue In Adding Client To Epoll");
@@ -108,7 +73,7 @@ int main(int ac, char **av)
                 if (events[i].events & EPOLLRDHUP /*&& !it->second*/)
                 {
                     std::cout << " Enter epoll hrdhuo \n";
-                    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd , NULL);
+                    epoll_ctl(mlp.epoll_fd, EPOLL_CTL_DEL, events[i].data.fd , NULL);
                     close(events[i].data.fd  );
                     continue ;
                 }
@@ -122,7 +87,7 @@ int main(int ac, char **av)
                         buffer.resize(bytesRead);
                     if (bytesRead <= 0)
                     {
-                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd , NULL);
+                        epoll_ctl(mlp.epoll_fd, EPOLL_CTL_DEL, events[i].data.fd , NULL);
                         close(events[i].data.fd);
                         continue ;
                     }
@@ -141,8 +106,8 @@ int main(int ac, char **av)
                         if (fd_maps[events[i].data.fd].post_.post_method(buffer, rq))
                             fd_maps[events[i].data.fd].post_.j = 1;
                     }
-                    fd_maps[events[i].data.fd].requst = rq; /* // must change.*/
-                    fd_maps[events[i].data.fd].u_can_send = 1; // must change.
+                    fd_maps[events[i].data.fd].requst       = rq; /* // must change.*/
+                    fd_maps[events[i].data.fd].u_can_send   = 1; // must change.
                 }
                 else if (events[i].events & EPOLLOUT && !it_fd->second.rd_done && it_fd->second.u_can_send) // must not always enter to here i think ask about it 
                 {
@@ -161,7 +126,7 @@ int main(int ac, char **av)
                     if (respo)
                     {
                         std::cout << "\t\t SF KAML GHADI UTM7A HAD "  << events[i].data.fd << std::endl;
-                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd , NULL);
+                        epoll_ctl(mlp.epoll_fd, EPOLL_CTL_DEL, events[i].data.fd , NULL);
                         close(events[i].data.fd);
                         fd_maps.erase(events[i].data.fd);
                         continue ;

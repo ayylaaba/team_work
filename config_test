@@ -1,0 +1,5 @@
+same servername.               stat = 0
+host ip check Valid.           stat = 1
+location argument.             stat = 1
+parse maxbodyclient.           stat = 0
+default config_file.           stat = 0

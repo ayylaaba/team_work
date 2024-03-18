@@ -10,6 +10,7 @@ SRCS = 	main.cpp \
 		request.cpp \
 		fd_info.cpp \
 		get_method.cpp \
+		multplixing.cpp \
 		./post/for_body.cpp \
 		./post/for_header.cpp \
 		./post/get_extension.cpp \

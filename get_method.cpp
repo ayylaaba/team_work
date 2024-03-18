@@ -164,7 +164,8 @@ std::string    get_method::generat_html_list(std::string directory)
         struct dirent* entry;
         while ((entry = readdir(dir)))
         {
-            resp += "<a href=\""+ std::string(entry->d_name) + " \">" + std::string(entry->d_name) + "</a><br>";
+            if (std::string(entry->d_name).compare(".") && std::string(entry->d_name).compare(".."))
+                resp += "<a href=\""+ std::string(entry->d_name) + " \">" + std::string(entry->d_name) + "</a><br>";
         }
         resp += "<hr></body></html>";
         closedir(dir);

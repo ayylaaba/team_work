@@ -14,10 +14,12 @@
 
 int i = 0;
 
-
 server::server()
 {
-    
+    duplicate["index"]          = 0;
+    duplicate["root"]           = 0;
+    duplicate["allow_methods"]  = 0;
+    duplicate["autoindex"]      = 0;
 }
 
 server::server(std::map<std::string, std::string> &cont_s, std::vector<location*> &l_)
@@ -81,7 +83,6 @@ void        server::mange_file(const char* file)
         str = strtrim(str);
         if (!str.compare("{"))
         {
-            std::cout << "Enter to the both \n";
             s_token++;
             parse_both(rd_content,str);
             if ((!str.compare("}") && s_token == 1 ))
@@ -121,6 +122,7 @@ int        server::parse_loca(std::ifstream& rd_cont, std::string &str_)
             {
                 handl_loca(cont_l, v_s, _root);
                 l.push_back(new location(cont_l, v_s));
+                check_dup();
                 cont_l.clear();
                 break ;
             }
@@ -136,6 +138,7 @@ int        server::parse_loca(std::ifstream& rd_cont, std::string &str_)
         str_l_vec = isolate_str(str_l, ' ');
         if(!str_l_vec[0].compare("location"))
         {
+            check_size(str_l_vec, 'l');
             cont_l[str_l_vec[0]] = str_l_vec[1].substr(0, str_l_vec[1].size()); // store location with its path
             return 1 ;
         }
@@ -171,7 +174,6 @@ int     server::valid_range(std::string s)
 
 int     server::check_exist(std::string path, char ch)
 {
-    std::cout << "path radi hm9na == " << path << "\n";
     if (ch == 'd')
     {
         DIR* dir = opendir(path.c_str());
@@ -210,8 +212,7 @@ int    server::parse_both(std::ifstream& rd_cont, std::string &str_)
     while (std::getline(rd_cont, str_)) // loop to iterate inside server
     {
         str_ = strtrim(str_);
-        std::cout << "str == " << str << "\n";
-        s_vec = isolate_str(str_, ' ');/////////////////////////////////////////////
+        s_vec = isolate_str(str_, ' ');
         if (s_token == 1 && !s_vec[0].compare("}"))
             break;
         else if (s_vec[0].compare("listen") && s_vec[0].compare("root") && s_vec[0].compare("error_page") 
@@ -219,14 +220,12 @@ int    server::parse_both(std::ifstream& rd_cont, std::string &str_)
         && s_vec[0].compare("server_name") && s_vec[0].compare("index")) 
         {
             if (s_vec[0].compare("location") && s_vec[0].compare("{"))
-            {
                 print_err("syntaxt_error");    
-                std::cout << "1 here \n";
-            }
             else if (!s_vec[0].compare("location") || !s_vec[0].compare("{"))
             {
-                if (s_vec[0].compare("{"))
+                if (s_vec[0].compare("{")) // you mean that is not { then it is a location
                 {
+                    check_size(s_vec, 'l'); // check first loca's path
                     std::getline(rd_cont, str_);
                     str = strtrim(str);
                 }
@@ -234,10 +233,7 @@ int    server::parse_both(std::ifstream& rd_cont, std::string &str_)
                 {
                     obj.l_token++;
                     if (parse_loca(rd_cont, str_) == 1)
-                    {
-                    // std::cout << "vev[0] == " << s_vec[0] << " vec[1] == " << s_vec[1] << "\n";
                         continue;
-                    }
                     else
                         return 1;
                 }
@@ -247,9 +243,7 @@ int    server::parse_both(std::ifstream& rd_cont, std::string &str_)
         {
             check_size(s_vec, 's');
             if (!s_vec[0].compare("error_page"))
-            {
                 handl_serv(s_vec[0], s_vec[2]);  
-            }
             stor_values(s_vec[0], s_vec[1], 's');
         }
     }
@@ -267,26 +261,30 @@ void        server::check_size(std::vector<std::string> &s, char c)
         || !s[0].compare("server_name") || !s[0].compare("index"))
         {
             if (s.size() != 2)
-                print_err("syntaxt_error");
+                print_err("syntaxt_error " + s[0]);
         }
         else if (!s[0].compare("error_page") ){
             if (s.size() != 3)
-                print_err("syntaxt_error");
+                print_err("syntaxt_error " + s[0]);
         }
     }
     else
     {
         if ((!s[0].compare("root") || !s[0].compare("index") 
         || !s[0].compare("limit_except") || !s[0].compare("autoindex") 
-        || !s[0].compare("upload")))
-        {
+        || !s[0].compare("upload"))){
             if (s.size() != 2)
-                print_err("syntaxt_error");
+                print_err("syntaxt_error on " + s[0]);
         }
-        else if (!s[0].compare("allow_methods") ){
+        if (!s[0].compare("allow_methods") ){
             if (s.size() < 2 || s.size() > 4)
-                print_err("syntaxt_error");
+                print_err("syntaxt_error on allow_methods");
         }
+        if (!s[0].compare("location"))
+        {
+            if (s.size() < 2 || s.size() > 2)
+                print_err("syntaxt_error on location");
+        } 
     }
 }
 
@@ -296,45 +294,68 @@ void      server::handl_serv(std::string s1, std::string s2)
     if (!s1.compare("listen"))
     {   
         if (is_num(s2) || valid_range(s2))
-        {
-            std::cout << "1 dir chi haja\n";
-            print_err("syntaxt_error");
-        }
+            print_err("syntaxt_error on port");
     }
     else if (!s1.compare("root"))
     {
         if (check_exist(s2, 'd') || check_permi(s2))
-        {
-             std::cout << "s1 = " << s1 << " s2 = " << s2 << "\n";
-            std::cout << "2 dir chi haja\n";
-            print_err("syntaxt_error");
-        }
+            print_err("syntaxt_error on the path");
     }
     else if (!s1.compare("error_page"))
     {
         if (check_exist(s2, 'f') || check_permi(s2))
-        {
-            std::cout << "3 dir chi haja\n";
-            print_err("syntaxt_error");
-        }
+            print_err("syntaxt_error on the file");
     }
     else if (!s1.compare("index"))
     {
         s2 = s_root + "/" + s2; // ta dir ao sawl 3liha wach darori.
         if (check_exist(s2, 'f') || check_permi(s2))
-        {
-            std::cout << "4 dir chi haja\n";
-
-            print_err("syntaxt_error");
-        }
+            print_err("syntaxt_error on index");
+    }
+    else if (!s1.compare("host"))
+    {
+        if (check_ip(s2) )
+            print_err("syntaxt_error on ip");
     }
 }
 
+int      server::check_ip_nbr(std::string nbr)
+{
+    int number = std::atoi(nbr.c_str());
+    if (number < 0 || number > 255)
+        return 1;
+    return 0;
+}
+
+int      server::check_ip(std::string ip)
+{
+    int count = 0;
+    for (size_t i = 0; i < ip.size(); i++)
+    {
+        if (ip[i] == '.')
+            count++;
+    }
+    if (count != 3)
+        return 1;
+    std::vector<std::string> ip_nmbr = isolate_str(ip, '.');
+    for (size_t i = 0; i < ip_nmbr.size(); i++)
+    {
+        if (is_num(ip_nmbr[i]) || check_ip_nbr(ip_nmbr[i]))
+            return 1;
+    }
+    return 0;
+}
 
 void        server::stor_values(std::string key, std::string value, char ch)
 {
     if (ch == 's')
     {
+        if (key.compare("error_page"))
+        {
+            std::map<std::string, std::string>::iterator it = cont.find(key);
+            if (it != cont.end())
+                print_err("Duplicat on directive's server");
+        }
         if (key.compare("error_page"))
             handl_serv(key, value);
         if (!key.compare("listen"))
@@ -354,7 +375,11 @@ void        server::stor_values(std::string key, std::string value, char ch)
     }
     else
     {
-        if (!key.compare("index"))
+        // std::map<std::string, std::string>::iterator it = cont.find(key);
+        // if (it != cont.end())
+        //     print_err("Duplicat on directive's location");
+        duplicate.find(key)->second++;
+        if (!key.compare("index"))            
             cont_l[key] = value.substr(0, value.size());
         else if (!key.compare("root"))
             cont_l[key] = value.substr(0, value.size());
@@ -368,8 +393,3 @@ void        server::stor_values(std::string key, std::string value, char ch)
             cont_l[key] = value.substr(0, value.size());
     }
 }
-
-// void    server::handle_err(const std::string  file)
-// {
-//     for (size_t i = 0; i < )
-// }

@@ -14,12 +14,6 @@
 
 location::location(std::map<std::string, std::string> &c, std::vector <std::string> &v_s)
 {
-    std::map<std::string, std::string>::iterator    it = c.find("index");
-    if (it != c.end())
-    {
-        std::cout << "ghadi t7lo lyom \n";
-        std::cout << " -> " << (*it).second << "<-- \n";
-    }
     cont_l = c;
     allowed_methods = v_s;
 }
@@ -59,17 +53,51 @@ int     location::check_permi(std::string path)
     return (0);
 } 
 
+void        location::check_dup()
+{
+    std::map<std::string, int>::iterator it = duplicate.begin();
+    std::map<std::string, int>::iterator ite = duplicate.end();
+    for(;it != ite; it++)
+    {
+        if (!it->first.compare("root"))
+        {
+            if (it->second != 1)
+                print_err("duplicate in directive");
+            it->second = 0;
+        }
+        if (!it->first.compare("allow_methods"))
+        {
+            if (it->second > 1)
+                print_err("duplicate in directive");
+            it->second = 0;
+        }
+        if (!it->first.compare("autoindex"))
+        {
+            if (it->second > 1)
+                print_err("duplicate in directive");
+            it->second = 0;
+        }
+        if (!it->first.compare("index"))
+        {
+            if (it->second > 1)
+                print_err("duplicate in directive");
+            it->second = 0;
+        }
+    } 
+}
+
 void        location::handl_loca(std::map<std::string, std::string>& m, std::vector<std::string> &methods, std::string root)
 {
 
     std::map<std::string, std::string>::iterator it = m.begin();
     std::map<std::string, std::string>::iterator ite = m.end();
+
     while (it != ite)
     {
         if (!(*it).first.compare("root"))
         {
             if (check_exist((*it).second, 'd') || check_permi((*it).second))
-                print_err("syntaxt_error");
+                print_err("syntaxt_error on the folder");
         }
         if (!(*it).first.compare("allow_methods"))
         {
@@ -77,19 +105,19 @@ void        location::handl_loca(std::map<std::string, std::string>& m, std::vec
             {
                 if (methods[i].compare("GET") && methods[i].compare("DELET")
                 && methods[i].compare("POST"))
-                    print_err("syntaxt_error");
+                    print_err("syntaxt_error methods");
             }
         }
         if (!(*it).first.compare("autoindex"))
         {
             if ((*it).second.compare("on") && (*it).second.compare("off"))
-                print_err("syntaxt_error");
+                print_err("syntaxt_error must be 'on' or 'off'");
         }
-        if (!(*it).first.compare("index"))
+        if (!(*it).first.compare("index")) // most be more than index and most check each one i think.
         {
             std::string path = root + "/" + (*it).second;
             if (check_exist(path, 'f') || check_permi(path))
-                print_err("syntaxt_error");
+                print_err("error on the file");
         }
         it++;
     }

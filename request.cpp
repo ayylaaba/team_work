@@ -34,7 +34,7 @@
 
 void            request::parse_req(std::string   rq, server &server)
 {
-    parse_header(rq, server);
+    // parse_header(rq, server);
     std::string line;
     size_t last = rq.find("\r\n");
     std::cout << "request line 'first line' " << rq.substr(0, last) << "\n";
