@@ -17,6 +17,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <fcntl.h>
 
 
 class multplixing
@@ -24,7 +25,7 @@ class multplixing
     public:
         void    lanch_server();
         int     epoll_fd;
-        int                 serverSocket;
+        int     serverSocket;
 
         multplixing(){
 
