@@ -13,7 +13,7 @@
 #include <vector>
 #include <fstream>
 #include "server.hpp"
-// #include "fd_info.hpp"
+// #include "Client.hpp"
 #include <sys/epoll.h>
 
 
@@ -29,7 +29,7 @@ class request
         std::string method;
         std::string http_version;
         std::map<std::string, std::string> extentions;
-        // std::map<int, fd_info>          fd_maps;
+        // std::map<int, Client>          fd_maps;
     
 
         bool        checki;
@@ -50,7 +50,7 @@ class request
         // int             read_request(server &server, int fd);
         std::string     get_full_uri(std::string path, server &server);
         std::string     delet_method(std::string path, server &server);
-        // std::string     get_header(int wich, std::string exten, std::string lentg, fd_info&  fd_inf);    
+        // std::string     get_header(int wich, std::string exten, std::string lentg, Client&  fd_inf);    
         void            parse_req(std::string   rq, server &server);
   
         template <typename T>

@@ -16,7 +16,7 @@
 #include "request.hpp"
 #include <sys/epoll.h>
 
-class fd_info;
+class Client;
 
 class get_method
 {
@@ -31,11 +31,11 @@ class get_method
         // int                 check_path;
 
         /*************** GET FUNCTIONS ***************/
-        std::string     get_header(int wich, std::string exten, std::string lentg, fd_info&  fd_inf);
+        std::string     get_header(int wich, std::string exten, std::string lentg, Client&  fd_inf);
         std::string     generat_html_list(std::string directory);
         std::string     get_index_file(std::map<std::string, std::string> &loca_map);
         bool            check_autoindex(std::map<std::string, std::string> loca_map);
-        // std::string     get_header(int wich, std::string exten, std::string lentg, fd_info&  fd_inf);
+        // std::string     get_header(int wich, std::string exten, std::string lentg, Client&  fd_inf);
         int             get_mthod(int fd);
         int check_exist(const std::string& path);
         /*************** REQUEST FUNCTIONS ***************/

@@ -12,7 +12,7 @@
 //     return response;
 // }
 
-// std::string     request::get_header(int wich, std::string exten, std::string lentg, fd_info& fd_inf)
+// std::string     request::get_header(int wich, std::string exten, std::string lentg, Client& fd_inf)
 // {
 //     std::string response;
 //     if (wich == 0)
@@ -144,7 +144,7 @@ bool            request::check_autoindex(std::map<std::string, std::string> loca
 
 // int    request::read_request(server &server, int fd)
 // {
-//     std::map<int, fd_info>::iterator it = fd_maps.find(fd);
+//     std::map<int, Client>::iterator it = fd_maps.find(fd);
 //     std::string         line;
 //     std::string         response;
 //     std::string         extention_type;

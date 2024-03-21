@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ayylaaba <ayylaaba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mallaoui <mallaoui@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/05 14:46:12 by ayylaaba          #+#    #+#             */
-/*   Updated: 2024/02/15 16:28:31 by ayylaaba         ###   ########.fr       */
+/*   Updated: 2024/03/21 02:18:53 by mallaoui         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,7 @@ int     server::check_exist(std::string path, char ch)
             std::fclose(file);
             return 0;
         }
-        std::fclose(file);
+        // std::fclose(file);
         return 1;
     }
 } 
