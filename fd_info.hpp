@@ -1,5 +1,5 @@
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#ifndef FD_INFO_HPP
+#define FD_INFO_HPP
 
 #include <iostream>
 #include <fstream>
@@ -14,7 +14,7 @@
 #include "get_method.hpp"
 #include "post.hpp"
 
-class Client
+class fd_info
 {
     public:
         int                 res_header;
@@ -27,13 +27,13 @@ class Client
         get_method          get;
         request             requst;
         post                post_;
-        
-        Client(std::string uri_);
-        Client(const Client& copy);
-        Client&         operator=(const Client& copy);
-        Client&         operator=(std::string _uri);
-        Client();
-        ~Client();
+        server               serv_;
+        fd_info(std::string uri_);
+        fd_info(const fd_info& copy);
+        fd_info&         operator=(const fd_info& copy);
+        fd_info&         operator=(std::string _uri);
+        fd_info();
+        ~fd_info();
 };
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mallaoui <mallaoui@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ayylaaba <ayylaaba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/05 14:46:12 by ayylaaba          #+#    #+#             */
-/*   Updated: 2024/03/21 02:18:53 by mallaoui         ###   ########.fr       */
+/*   Updated: 2024/02/15 16:28:31 by ayylaaba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,8 @@ std::vector<std::string>    server::isolate_str(std::string s, char deli)
 
 void        server::mange_file(const char* file)
 {
-
     // lfkra = had lfile rdi t9rah fkola server radi parsih plus t stori cola sserver f string ao diro f vector
-    std::ifstream                       rd_content(file);
+    std::ifstream   rd_content(file);
     s_token = 0;
     obj.l_token = 0;
 
@@ -78,7 +77,7 @@ void        server::mange_file(const char* file)
         if (str.empty())
             return ;
         if (str.compare("server"))
-            print_err("syntaxt_error");
+            print_err("syntaxt_error server");
         std::getline(rd_content, str); // store all servers
         str = strtrim(str);
         if (!str.compare("{"))
@@ -104,16 +103,18 @@ int        server::parse_loca(std::ifstream& rd_cont, std::string &str_)
         check = "off";
         str_ = strtrim(str_);
         l_vec = isolate_str(str_, ' ');
+        std::cout << "str --> " << str << "<--\n";
         if (!l_vec[0].compare("root") || !l_vec[0].compare("index") 
             || !l_vec[0].compare("limit_except") || !l_vec[0].compare("allow_methods") 
-            || !l_vec[0].compare("autoindex") || !l_vec[0].compare("upload"))
+            || !l_vec[0].compare("autoindex") || !l_vec[0].compare("upload") 
+            ||  !l_vec[0].compare("upload_path"))
             {
                 check_size(l_vec, 'l'); 
                 if (!l_vec[0].compare("allow_methods"))
                     v_s = l_vec;
                 if (!l_vec[0].compare("root"))
                     _root = l_vec[1];
-                stor_values(l_vec[0],l_vec[1], 'l');
+                stor_values(l_vec, 'l');
             }
         else if (!l_vec[0].compare("}"))
         {
@@ -128,7 +129,9 @@ int        server::parse_loca(std::ifstream& rd_cont, std::string &str_)
             }
         }
         else
-            print_err("syntaxt_error");
+        {
+            print_err("syntaxt_error unkown directive");
+        }
     }
     if (obj.l_token == 2)
     {
@@ -187,13 +190,14 @@ int     server::check_exist(std::string path, char ch)
     }
     else
     {
+        std::cout << "path == " << path << std::endl;
         std::FILE* file = std::fopen(path.c_str(), "r"); // most change the function
         if (file && path[path.length() - 1] != '/')
         {
             std::fclose(file);
             return 0;
         }
-        // std::fclose(file);
+        // std::fclose(file); // segv ??
         return 1;
     }
 } 
@@ -215,9 +219,10 @@ int    server::parse_both(std::ifstream& rd_cont, std::string &str_)
         s_vec = isolate_str(str_, ' ');
         if (s_token == 1 && !s_vec[0].compare("}"))
             break;
-        else if (s_vec[0].compare("listen") && s_vec[0].compare("root") && s_vec[0].compare("error_page") 
+        else if (s_vec[0].compare("listen")&& s_vec[0].compare("error_page") 
         && s_vec[0].compare("client_max_body_size") && s_vec[0].compare("host") 
-        && s_vec[0].compare("server_name") && s_vec[0].compare("index")) 
+        && s_vec[0].compare("server_name") && s_vec[0].compare("index")
+        &&s_vec[0].compare("root"))
         {
             if (s_vec[0].compare("location") && s_vec[0].compare("{"))
                 print_err("syntaxt_error");    
@@ -243,11 +248,25 @@ int    server::parse_both(std::ifstream& rd_cont, std::string &str_)
         {
             check_size(s_vec, 's');
             if (!s_vec[0].compare("error_page"))
-                handl_serv(s_vec[0], s_vec[2]);  
-            stor_values(s_vec[0], s_vec[1], 's');
+            {
+                if (!check_exist(s_vec[2], 'f') && !check_stat(s_vec[1])) // check also stat lik 404 301 ...
+                    err_page[s_vec[1]] = s_vec[2];
+                else
+                    print_err("syntaxt_error on the error_page");
+            }
+            handl_serv(s_vec); 
+            stor_values(s_vec, 's');
         }
     }
     return (0);
+}
+
+int        server::check_stat(std::string &stat_error)
+{
+    if (stat_error.compare("403") && stat_error.compare("404") && 
+    stat_error.compare("301")) // you should add more i think ...
+        return 1;
+    return 0;
 }
 
 void        server::check_size(std::vector<std::string> &s, char c)
@@ -258,7 +277,7 @@ void        server::check_size(std::vector<std::string> &s, char c)
             s_root = s_vec[1];    
         if (!s[0].compare("listen") || !s[0].compare("root")
         || !s[0].compare("client_max_body_size") || !s[0].compare("host") 
-        || !s[0].compare("server_name") || !s[0].compare("index"))
+        || !s[0].compare("server_name"))
         {
             if (s.size() != 2)
                 print_err("syntaxt_error " + s[0]);
@@ -289,32 +308,38 @@ void        server::check_size(std::vector<std::string> &s, char c)
 }
 
 
-void      server::handl_serv(std::string s1, std::string s2)
+void      server::handl_serv(std::vector<std::string> s)
 {
-    if (!s1.compare("listen"))
+    if (!s[0].compare("listen"))
     {   
-        if (is_num(s2) || valid_range(s2))
+        if (is_num(s[1]) || valid_range(s[1]))
             print_err("syntaxt_error on port");
     }
-    else if (!s1.compare("root"))
+    else if (!s[0].compare("root"))
     {
-        if (check_exist(s2, 'd') || check_permi(s2))
+        if (check_exist(s[1], 'd') || check_permi(s[1]))
             print_err("syntaxt_error on the path");
     }
-    else if (!s1.compare("error_page"))
+    else if (!s[0].compare("error_page"))
     {
-        if (check_exist(s2, 'f') || check_permi(s2))
+        std::cout << "s[1] ===> " << s[1] << "<====\n";
+        if (check_exist(s[2], 'f') || check_permi(s[2]))
             print_err("syntaxt_error on the file");
     }
-    else if (!s1.compare("index"))
+    else if (!s[0].compare("index"))
     {
-        s2 = s_root + "/" + s2; // ta dir ao sawl 3liha wach darori.
-        if (check_exist(s2, 'f') || check_permi(s2))
-            print_err("syntaxt_error on index");
+        for (size_t i = 1; i < s.size(); i++)
+        {
+            indexs.push_back(s[i]);
+            std::cout << "----->>>> " << s[i] << "<<<<-------\n";
+            s[1] = s_root + "/" + s[i];
+            if (check_exist(s[1], 'f') || check_permi(s[1]))
+                print_err("syntaxt_error on index");
+        }
     }
-    else if (!s1.compare("host"))
+    else if (!s[0].compare("host"))
     {
-        if (check_ip(s2) )
+        if (check_ip(s[1]) )
             print_err("syntaxt_error on ip");
     }
 }
@@ -346,50 +371,50 @@ int      server::check_ip(std::string ip)
     return 0;
 }
 
-void        server::stor_values(std::string key, std::string value, char ch)
+void        server::stor_values(std::vector<std::string> s, char ch)
 {
     if (ch == 's')
     {
-        if (key.compare("error_page"))
+        if (s[0].compare("error_page"))
         {
-            std::map<std::string, std::string>::iterator it = cont.find(key);
+            std::map<std::string, std::string>::iterator it = cont.find(s[0]);
             if (it != cont.end())
                 print_err("Duplicat on directive's server");
         }
-        if (key.compare("error_page"))
-            handl_serv(key, value);
-        if (!key.compare("listen"))
-            cont[key] = value.substr(0, value.size());
-        else if (!key.compare("root"))
-            cont[key] = value.substr(0, value.size());
-        else if (!key.compare("error_page"))
-            cont[key] = value.substr(0, value.size());
-        else if (!key.compare("host"))
-            cont[key] = value.substr(0, value.size());
-        else if (!key.compare("server_name"))
-            cont[key] = value.substr(0, value.size());
-        else if (!key.compare("client_max_body_size"))
-            cont[key] = value.substr(0, value.size());
-        else if (!key.compare("index"))
-            cont[key] = value.substr(0, value.size());
+        if (s[0].compare("error_page"))
+            handl_serv(s);
+        if (!s[0].compare("listen"))
+            cont[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("root"))
+            cont[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("error_page"))
+            cont[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("host"))
+            cont[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("server_name"))
+            cont[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("client_max_body_size"))
+            cont[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("index"))
+            cont[s[0]] = s[1].substr(0, s[1].size());
     }
     else
     {
-        // std::map<std::string, std::string>::iterator it = cont.find(key);
+        // std::map<std::string, std::string>::iterator it = cont.find(s[0]);
         // if (it != cont.end())
         //     print_err("Duplicat on directive's location");
-        duplicate.find(key)->second++;
-        if (!key.compare("index"))            
-            cont_l[key] = value.substr(0, value.size());
-        else if (!key.compare("root"))
-            cont_l[key] = value.substr(0, value.size());
-        else if (!key.compare("limit_except"))
-            cont_l[key] = value.substr(0, value.size());
-        else if (!key.compare("allow_methods"))
-            cont_l[key] = value.substr(0, value.size());
-        else if (!key.compare("autoindex"))
-            cont_l[key] = value.substr(0, value.size());
-        else if (!key.compare("upload"))
-            cont_l[key] = value.substr(0, value.size());
+        duplicate.find(s[0])->second++;
+        if (!s[0].compare("index"))            
+            cont_l[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("root"))
+            cont_l[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("limit_except"))
+            cont_l[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("allow_methods"))
+            cont_l[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("autoindex"))
+            cont_l[s[0]] = s[1].substr(0, s[1].size());
+        else if (!s[0].compare("upload"))
+            cont_l[s[0]] = s[1].substr(0, s[1].size());
     }
 }

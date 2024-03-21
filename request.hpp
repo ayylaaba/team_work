@@ -13,7 +13,6 @@
 #include <vector>
 #include <fstream>
 #include "server.hpp"
-// #include "Client.hpp"
 #include <sys/epoll.h>
 
 
@@ -28,29 +27,22 @@ class request
         std::string path;
         std::string method;
         std::string http_version;
-        std::map<std::string, std::string> extentions;
-        // std::map<int, Client>          fd_maps;
-    
+        std::map<std::string, std::string> extentions;    
 
-        bool        checki;
+        bool        auto_index_stat;
         unsigned long g;
         size_t check;
 
         /*************** REQUEST FUNCTIONS ***************/
 
-        // std::string     get_ori_uri(std::string path, server &server);
         void            parse_header(std::string buffer, server &serv);
         std::string     get_delet_resp(std::string path, int stat);
         void            fill_extentions();
         std::streampos  get_fileLenth(std::string path);
         std::string     get_exten_type(std::string path);
-        // std::string     generat_html_list(std::string directory);
-        // std::string     get_index_file(std::map<std::string, std::string> &loca_map);
         bool            check_autoindex(std::map<std::string, std::string> loca_map);
-        // int             read_request(server &server, int fd);
         std::string     get_full_uri(std::string path, server &server);
         std::string     delet_method(std::string path, server &server);
-        // std::string     get_header(int wich, std::string exten, std::string lentg, Client&  fd_inf);    
         void            parse_req(std::string   rq, server &server);
   
         template <typename T>

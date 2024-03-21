@@ -1,8 +1,8 @@
-#include "Client.hpp"
+#include "fd_info.hpp"
 #include "request.hpp"
 #include "get_method.hpp"
 
-Client::Client(std::string uri_)
+fd_info::fd_info(std::string uri_)
 {
     stor_uri    = uri_;
     res_header  = 0;
@@ -12,7 +12,7 @@ Client::Client(std::string uri_)
 }
 
 
-Client::Client(const Client& copy)
+fd_info::fd_info(const fd_info& copy)
 {
     this->u_can_send  = copy.u_can_send; 
     this->filePosition = copy.filePosition;
@@ -21,13 +21,8 @@ Client::Client(const Client& copy)
     this->stor_uri = copy.stor_uri;
 }
 
-// Client&         Client::operator=(std::string _uri)
-// {
-//     stor_uri = _uri;
-//     return (*this);
-// }
 
-Client&         Client::operator=(const Client& copy)
+fd_info&         fd_info::operator=(const fd_info& copy)
 {
     this->u_can_send  = copy.u_can_send; 
      this->filePosition = copy.filePosition;
@@ -39,11 +34,11 @@ Client&         Client::operator=(const Client& copy)
     return (*this);
 }
 
-Client::~Client()
+fd_info::~fd_info()
 {
 }
 
-Client::Client()
+fd_info::fd_info()
 {
     res_header  = 0;
     rd_done     = 0;

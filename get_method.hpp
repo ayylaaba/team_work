@@ -16,7 +16,7 @@
 #include "request.hpp"
 #include <sys/epoll.h>
 
-class Client;
+class fd_info;
 
 class get_method
 {
@@ -29,18 +29,21 @@ class get_method
         // std::string         buff_s;
         // std::stringstream   size;
         // int                 check_path;
+        std::map<int, std::string> err_page;
 
         /*************** GET FUNCTIONS ***************/
-        std::string     get_header(int wich, std::string exten, std::string lentg, Client&  fd_inf);
+        std::string     get_header(int wich, std::string exten, std::string lentg, fd_info&  fd_inf);
         std::string     generat_html_list(std::string directory);
         std::string     get_index_file(std::map<std::string, std::string> &loca_map);
         bool            check_autoindex(std::map<std::string, std::string> loca_map);
-        // std::string     get_header(int wich, std::string exten, std::string lentg, Client&  fd_inf);
         int             get_mthod(int fd);
-        int check_exist(const std::string& path);
-        /*************** REQUEST FUNCTIONS ***************/
+        void            err_page_();
+        int             check_exist(const std::string& path);
         std::streampos  get_fileLenth(std::string path);
         std::string     get_exten_type(std::string path, std::map<std::string, std::string> &exta);
+       
+        /********************************************/
+        
         template <typename T>
         std::string to_string(T value) 
         {

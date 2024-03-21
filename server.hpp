@@ -32,7 +32,7 @@ class server : public location
         std::vector<location*>              l;
         std::map<std::string, std::string>  cont;
         location                            obj;
-
+        std::map<std::string, std::string>  err_page;
         std::string                         str;
         std::string                         str_l;
         std::vector<std::string>            str_l_vec;
@@ -40,18 +40,20 @@ class server : public location
         std::vector<std::string>            s_vec;
         std::string                         check;
         std::map<int, int>                  req_time;
+        std::vector<std::string>            indexs;
 
+        int                                 check_stat(std::string &stat_error);
         void                                mange_file(const char* file);
         void                                handle_err(const std::string  file);
         std::string                         strtrim(std::string &str);
         void                                print_err(std::string str);
         std::vector<std::string>            isolate_str(std::string s, char deli);
-        void                                stor_values(std::string key, std::string value, char ch);
+        void                                stor_values(std::vector<std::string> s, char ch);
         void                                free_l(std::vector<location*> &lv);
         int                                 parse_loca(std::ifstream& rd_cont, std::string &str_);
         int                                 parse_both(std::ifstream& rd_cont, std::string &str_);
         void                                check_size(std::vector<std::string> &s, char c);
-        void                                handl_serv(std::string s1, std::string s2);
+        void                                handl_serv(std::vector<std::string> s);
         int                                 is_num(std::string s);
         int                                 valid_range(std::string s);
         int                                 check_permi(std::string path);

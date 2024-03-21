@@ -1,5 +1,19 @@
-same servername.               stat = 0
-host ip check Valid.           stat = 1
-location argument.             stat = 1
-parse maxbodyclient.           stat = 0
-default config_file.           stat = 0
+same servername                stat = 0
+host ip check Valid.            stat = 1
+location argument.              stat = 1
+parse maxbodyclient.            stat = 0
+default config_file.            stat = 0
+
+http://localhost:8080/folder    stat = 0
+
+location 
+{
+    return : path;              stat = 0
+    upload_status : on or off;  stat = 1
+    upload_PATH : paTH;         stat = 1
+    CGI_STATUS : on or off:     stat = 0
+    cgi type: commend;          stat = 0
+}
+
+
+check on http://localhost:8080/ most be works.

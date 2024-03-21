@@ -99,6 +99,16 @@ void        location::handl_loca(std::map<std::string, std::string>& m, std::vec
             if (check_exist((*it).second, 'd') || check_permi((*it).second))
                 print_err("syntaxt_error on the folder");
         }
+        if (!(*it).first.compare("upload"))
+        {
+            if (((*it).second.compare("on") && (*it).second.compare("off")))
+                print_err("syntaxt_error must be 'on' or 'off'");
+        }
+        if (!(*it).first.compare("upload_path"))
+        {
+            if (check_exist((*it).second, 'd') || check_permi((*it).second))
+                print_err("syntaxt_error on upload_path's path");
+        }
         if (!(*it).first.compare("allow_methods"))
         {
             for (size_t i = 1; i < methods.size(); i++)
@@ -117,7 +127,10 @@ void        location::handl_loca(std::map<std::string, std::string>& m, std::vec
         {
             std::string path = root + "/" + (*it).second;
             if (check_exist(path, 'f') || check_permi(path))
+            {
+                std::cout << "-0-0-" << path << "\n";
                 print_err("error on the file");
+            }
         }
         it++;
     }

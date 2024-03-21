@@ -1,12 +1,12 @@
 #include "get_method.hpp"
-#include "Client.hpp"
+#include "fd_info.hpp"
 
-extern std::map<int, Client> fd_maps;
+extern std::map<int, fd_info> fd_maps;
 
 int    get_method::get_mthod(int fd)
 {
     std::cout << "--------------- get_mthod --------------------------\n";
-    std::map<int, Client>::iterator it = fd_maps.find(fd);
+    std::map<int, fd_info>::iterator it = fd_maps.find(fd);
     std::string         response;
     std::string         extention_type;
     std::stringstream   StringSize;
@@ -47,7 +47,7 @@ int    get_method::get_mthod(int fd)
             }
         }
     }
-    else if (check_path == 2 /*&& !checki*/)
+    else if (check_path == 2 && it->second.requst.auto_index_stat)
     {
         if (it->second.requst.uri[it->second.requst.uri.length() -1] != '/')
         {
@@ -72,16 +72,33 @@ int    get_method::get_mthod(int fd)
     }
     else
     {
-        std::string _404;  
-        _404 = "<h1>404 Not Found</h1>";
-        _404 += "<html><head><title>404 Not Found</title></head><body>";
-        _404 += "</body></html>";
-        size << _404.size();
         response =  get_header(404, "text/html", size.str(), it->second);
-        response += _404;
-        send(fd, response.c_str(), response.size(), 0);
-        it->second.rd_done = 1;
-        return 1;
+        std::map<std::string, std::string>::iterator it_ = it->second.serv_.err_page.find("404");
+        if( it->second.serv_.err_page.find("404") != it->second.serv_.err_page.end())
+        {
+            std::cout << "Entre =\n";
+            std::fstream err_file;
+            err_file.open(it_->second.c_str());
+            char            buff_[1024];
+            err_file.read(buff_, 1024).gcount();
+            std::cout << "<<- content ->> " << buff_ << "\n"; 
+            response += to_string(buff_);
+            send(fd, response.c_str(), response.size(), 0);
+            it->second.rd_done = 1;
+            return 1;
+        }
+        else
+        {
+            std::string _404;  
+            _404 = "<h1>404 Not Fouddnd</h1>";
+            _404 += "<html><head><title>404 Not Found</title></head><body>";
+            _404 += "</body></html>";
+            size << _404.size();
+            response += _404;
+            send(fd, response.c_str(), response.size(), 0);
+            it->second.rd_done = 1;
+            return 1;
+        }
     }
     return 0;
 }
@@ -112,7 +129,7 @@ std::streampos  get_method::get_fileLenth(std::string path)
     return file_Size;
 }
 
-std::string      get_method::get_header(int wich, std::string exten, std::string lentg, Client& fd_inf)
+std::string      get_method::get_header(int wich, std::string exten, std::string lentg, fd_info& fd_inf)
 {
     std::string response;
     if (wich == 0)
@@ -219,4 +236,9 @@ int     get_method::check_exist(const std::string& path)
             return 2; // Path exists and is a directory
     }
     return 0; // Path does not exist
+}
+
+void        get_method::err_page_()
+{
+    err_page[404] = "/nfs/homes/ayylaaba/Desktop/team/my_errors/404.html";
 }
