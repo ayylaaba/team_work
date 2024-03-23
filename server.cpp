@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ayylaaba <ayylaaba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mallaoui <mallaoui@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/05 14:46:12 by ayylaaba          #+#    #+#             */
-/*   Updated: 2024/02/15 16:28:31 by ayylaaba         ###   ########.fr       */
+/*   Updated: 2024/03/23 07:35:19 by mallaoui         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ int        server::parse_loca(std::ifstream& rd_cont, std::string &str_)
         check = "off";
         str_ = strtrim(str_);
         l_vec = isolate_str(str_, ' ');
-        std::cout << "str --> " << str << "<--\n";
+        // std::cout << "str --> " << str << "<--\n";
         if (!l_vec[0].compare("root") || !l_vec[0].compare("index") 
             || !l_vec[0].compare("limit_except") || !l_vec[0].compare("allow_methods") 
             || !l_vec[0].compare("autoindex") || !l_vec[0].compare("upload") 
@@ -190,7 +190,7 @@ int     server::check_exist(std::string path, char ch)
     }
     else
     {
-        std::cout << "path == " << path << std::endl;
+        // std::cout << "path == " << path << std::endl;
         std::FILE* file = std::fopen(path.c_str(), "r"); // most change the function
         if (file && path[path.length() - 1] != '/')
         {
@@ -322,7 +322,7 @@ void      server::handl_serv(std::vector<std::string> s)
     }
     else if (!s[0].compare("error_page"))
     {
-        std::cout << "s[1] ===> " << s[1] << "<====\n";
+        // std::cout << "s[1] ===> " << s[1] << "<====\n";
         if (check_exist(s[2], 'f') || check_permi(s[2]))
             print_err("syntaxt_error on the file");
     }
@@ -331,7 +331,7 @@ void      server::handl_serv(std::vector<std::string> s)
         for (size_t i = 1; i < s.size(); i++)
         {
             indexs.push_back(s[i]);
-            std::cout << "----->>>> " << s[i] << "<<<<-------\n";
+            // std::cout << "----->>>> " << s[i] << "<<<<-------\n";
             s[1] = s_root + "/" + s[i];
             if (check_exist(s[1], 'f') || check_permi(s[1]))
                 print_err("syntaxt_error on index");
