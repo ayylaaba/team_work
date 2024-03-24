@@ -1,12 +1,12 @@
 #include "get_method.hpp"
-#include "fd_info.hpp"
+#include "Client.hpp"
 
-extern std::map<int, fd_info> fd_maps;
+extern std::map<int, Client> fd_maps;
 
 int    get_method::get_mthod(int fd)
 {
     std::cout << "--------------- get_mthod --------------------------\n";
-    std::map<int, fd_info>::iterator it = fd_maps.find(fd);
+    std::map<int, Client>::iterator it = fd_maps.find(fd);
     std::string         response;
     std::string         extention_type;
     std::stringstream   StringSize;
@@ -135,7 +135,7 @@ std::streampos  get_method::get_fileLenth(std::string path)
     return file_Size;
 }
 
-std::string      get_method::get_header(int wich, std::string exten, std::string lentg, fd_info& fd_inf)
+std::string      get_method::get_header(int wich, std::string exten, std::string lentg, Client& fd_inf)
 {
     std::string response;
     if (wich == 0)

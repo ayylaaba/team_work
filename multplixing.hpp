@@ -17,18 +17,26 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <fcntl.h>
+#include <map>
+#include <vector>
+#include "Client.hpp"
 
+# define MAX_EVENTS 1024
+# define BUFFER_SIZE 1024
 
 class multplixing
 {
+    private:
+        struct epoll_event events[MAX_EVENTS];
     public:
-        void    lanch_server();
+        void    lanch_server(server parse);server              parse;
         int     epoll_fd;
-        int                 serverSocket;
-
+        std::vector<int>   serverSocket;
+        int    string_to_int(std::string str);
         multplixing(){
-
         };
 };
+
 
 #endif

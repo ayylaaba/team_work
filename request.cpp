@@ -34,7 +34,7 @@ std::string     request::get_full_uri(std::string path, server &server)
     std::string     full_path;
     std::string     full_rest;
     size_t          pos;
-    size_t          x;
+    // size_t          x;
     bool            found = false;
     std::map<std::string, std::string> root_map;
     
@@ -44,7 +44,7 @@ std::string     request::get_full_uri(std::string path, server &server)
     {
         std::cout << "only root '/' hana \n";
         loca_fldr = path;
-        x = 1;
+        // x = 1;
     }
     else 
     {
@@ -134,6 +134,7 @@ std::string     request::get_full_uri(std::string path, server &server)
             {
                 std::cout << loca_fldr << "<----/data\n";
                 std::cout << full_path << "<--/data/\n";
+                
                 full_path = (*it_).second + "/" + full_rest;
                 check = 1;
                 std::cout << "full ---->> " << full_path << "\n"; 
@@ -151,6 +152,7 @@ std::string     request::get_full_uri(std::string path, server &server)
                 else
                 {
                     std::cout << " Before ==> " << full_path << "\n";
+                    std::cout << " it  ==> " << (*it_).second << "\n";
                     full_path = (*it_).second; 
                     std::cout << " After ==> " << full_path << "\n";
                     check = 1;
