@@ -29,20 +29,43 @@ void            request::parse_req(std::string   rq, server &server)
 
 std::string     request::get_full_uri(std::string path, server &server)
 {
-    std::string loca_fldr;
-    std::string rest_fldr;
-    std::string full_path;
-    size_t      pos;
+    std::string     loca_fldr;
+    std::string     rest_fldr;
+    std::string     full_path;
+    std::string     full_rest;
+    size_t          pos;
+    size_t          x;
+    bool            found = false;
+    std::map<std::string, std::string> root_map;
     
     check = false;
-    path = path.substr(1);
-    pos = path.find("/");
-    loca_fldr = path.substr(0, pos); // folder that isolat from request line
-    rest_fldr = path.substr(pos + 1); // chyata lib9at mn wrat folder dyal request line.
-
-    std::cout << "first_fldr = " << loca_fldr << "\n";
-    std::cout << "rest of folder = " << rest_fldr << "\n";
-
+    std::cout << "before ===> " << path << "\n";
+    if(!path.compare("/"))
+    {
+        std::cout << "only root '/' hana \n";
+        loca_fldr = path;
+        x = 1;
+    }
+    else 
+    {
+        std::cout << "dkhol hana \n";
+        path = path.substr(1);
+        pos = path.find("/");
+        if (pos != std::string::npos)
+        {
+            full_rest = path; // ?
+            loca_fldr = path.substr(0, pos); // folder that isolat from request line
+            rest_fldr = path.substr(pos + 1); // chyata lib9at mn wrat folder dyal request line.
+        }
+        else
+        {
+            full_rest = path; // ?
+            loca_fldr = path;
+        }
+        std::cout << "path0 0_0 = "      <<  path << "\n";
+        std::cout << "first_fldr = "     <<  loca_fldr << "\n";
+        std::cout << "rest of folder = " <<  rest_fldr << "\n";
+    }
     for (size_t i = 0; i < server.s.size(); i++)
     {
         for (size_t j = 0; j < server.s[i]->l.size(); j++)
@@ -50,22 +73,155 @@ std::string     request::get_full_uri(std::string path, server &server)
             std::map<std::string, std::string>::iterator      ite = server.s[i]->l[j]->cont_l.end();
             for (std::map<std::string, std::string>::iterator itb = server.s[i]->l[j]->cont_l.begin(); itb != ite; itb++)
             {
-                if (!(*itb).first.compare("location") &&  !(*itb).second.substr(1).compare(loca_fldr))
+                if ((!(*itb).first.compare("location") && !(*itb).second.compare("/"))) // will need in case found = 0 that means that /test test does'nt found in location's path
+                    root_map = server.s[i]->l[j]->cont_l;
+                if ((!(*itb).first.compare("location") &&  !(*itb).second.substr(1).compare(loca_fldr)) /*|| 
+                    (x && !(*itb).second.compare("/"))*/)
+                {
+                    // std::cout << "88888888888888888888\n";
+                    // exit(10);
+                    std::cout << "check location == " << (*itb).first << " check Second == " << (*itb).second << "\n";
+                    found = true;
+                    auto_index_stat = check_autoindex(server.s[i]->l[j]->cont_l);
+                    // std::cout << "hhhhhhhhhhhhhh\n";
+                    // exit(3);
+                    std::map<std::string, std::string>::iterator it_b = server.s[i]->l[j]->cont_l.find("root");
+                    if (!rest_fldr.empty()) // rest 3amr
+                    {
+                        std::cout << "********///////////////****************////////////////****************\n";
+                        full_path = (*it_b).second + "/" + rest_fldr;
+                        check = 1;
+                        break;
+                    }
+                    else // add index on specify location
+                    {
+                        std::map<std::string, std::string>::iterator indx = server.s[i]->l[j]->cont_l.find("index");
+                        if (indx != server.s[i]->l[j]->cont_l.end())
+                        {
+                            full_path = (*it_b).second + "/" + (*indx).second; 
+                            check = 1;
+                            break;
+                        }
+                        else
+                        {
+                            std::cout << "------------------------------------------------------\n";
+                            std::cout << "path =_= " << (*it_b).second << "\n";
+                            full_path = (*it_b).second; 
+                            std::cout << "full_path =_= " << full_path << "\n";
+                            check = 1;
+                            break;
+                        }
+                    }
+                    if (check)
+                        break;
+                }
+                else if (!loca_fldr.compare("favicon.ico"))
+                {
+                    full_path = "error";
+                    check = 1;
+                    break;
+                }
+            }
+            if (check)
+                break;
+        }
+        if (!found)
+        {
+            std::cout << "found dkhaaaaaaaaaaaaaaaal \n";
+            std::map<std::string, std::string>::iterator it_ = root_map.find("root");
+            auto_index_stat = check_autoindex(root_map);
+            if (!full_rest.empty()) // rest 3amr
+            {
+                std::cout << loca_fldr << "<----/data\n";
+                std::cout << full_path << "<--/data/\n";
+                full_path = (*it_).second + "/" + full_rest;
+                check = 1;
+                std::cout << "full ---->> " << full_path << "\n"; 
+                break;
+            }
+            else // add index on specify location
+            {
+                std::map<std::string, std::string>::iterator indx_ = root_map.find("index");
+                if (indx_ != root_map.end())
+                {
+                    full_path = (*it_).second + "/" + (*indx_).second; 
+                    check = 1;
+                    break;
+                }
+                else
+                {
+                    std::cout << " Before ==> " << full_path << "\n";
+                    full_path = (*it_).second; 
+                    std::cout << " After ==> " << full_path << "\n";
+                    check = 1;
+                    std::cout << "1\n";
+                    break;
+                }
+            }
+        }
+    }
+    std::cout << "Inside fun Full Path ---> " << full_path << "\n";
+    return (full_path);
+
+}
+
+
+/*std::string     request::get_full_uri(std::string path, server &server)
+{
+    std::string     loca_fldr;
+    std::string     rest_fldr;
+    std::string     full_path;
+    size_t          pos;
+    size_t          x;
+    bool            found = false;
+    std::map<std::string, std::string> root_map;
+    
+    check = false;
+    std::cout << "before ===> " << path << "\n";
+    if (path[0] == '/' && !path.substr(1).empty())
+    {
+        std::cout << "madkhlch hana \n";
+        path = path.substr(1);
+        pos = path.find("/");
+        if (pos != std::string::npos)
+            loca_fldr = path.substr(0, pos); // folder that isolat from request line
+        rest_fldr = path.substr(pos + 1); // chyata lib9at mn wrat folder dyal request line.
+    }
+    else if (path[0] == '/' && path.substr(1).empty())
+    {
+        std::cout << "dkhol hana \n";
+        loca_fldr = path;
+        x = 1;
+    }
+    std::cout << "first_fldr = " << loca_fldr << "\n";
+    std::cout << "rest of folder = " << rest_fldr << "\n";
+    for (size_t i = 0; i < server.s.size(); i++)
+    {
+        for (size_t j = 0; j < server.s[i]->l.size(); j++)
+        {
+            std::map<std::string, std::string>::iterator      ite = server.s[i]->l[j]->cont_l.end();
+            for (std::map<std::string, std::string>::iterator itb = server.s[i]->l[j]->cont_l.begin(); itb != ite; itb++)
+            {
+                if ((!(*itb).first.compare("location") &&  !(*itb).second.compare("/"))) // will need in case found = 0 that means that /test test does'nt found in location's path
+                    root_map = server.s[i]->l[j]->cont_l;
+                if ((!(*itb).first.compare("location") &&  !(*itb).second.substr(1).compare(loca_fldr)) || 
+                    (x && !(*itb).second.compare(loca_fldr)))
                 {
                     std::cout << "check location == " << (*itb).first << " check Second == " << (*itb).second << "\n";
+                    found = true;
                     auto_index_stat = check_autoindex(server.s[i]->l[j]->cont_l);
                     std::map<std::string, std::string>::iterator it_e = server.s[i]->l[j]->cont_l.end();
                     for (std::map<std::string, std::string>::iterator it_b = server.s[i]->l[j]->cont_l.begin(); it_b != it_e; it_b++)
                     {
-                        if (!(*it_b).first.compare("root"))
+                        if (!(*it_b).first.compare("root")) // add chyata
                         {
                             if (!rest_fldr.empty()) // rest 3amr
                             {
-                                full_path = (*it_b).second + "/" + rest_fldr; 
+                                full_path = (*it_b).second + "/" + rest_fldr;
                                 check = 1;
                                 break;
                             }
-                            else
+                            else // add index on specify location
                             {
                                 std::map<std::string, std::string>::iterator indx = server.s[i]->l[j]->cont_l.find("index");
                                 if (indx != server.s[i]->l[j]->cont_l.end())
@@ -92,19 +248,55 @@ std::string     request::get_full_uri(std::string path, server &server)
             if (check)
                 break;
         }
+        if (!found)
+        {
+            std::cout << "found dkhaaaaaaaaaaaaaaaal \n";
+            // exit (1);
+            std::map<std::string, std::string>::iterator it_ = root_map.find("root");
+            if (!rest_fldr.empty()) // rest 3amr
+            {
+                full_path = (*it_).second + "/" + rest_fldr;
+                check = 1;
+                break;
+            }
+            else // add index on specify location
+            {
+                std::map<std::string, std::string>::iterator indx_ = root_map.find("index");
+                if (indx_ != root_map.end())
+                {
+                    full_path = (*it_).second + "/" + (*indx_).second; 
+                    check = 1;
+                    break;
+                }
+                else
+                {
+                    std::cout << " Before ==> " << full_path << "\n";
+                    full_path = (*it_).second; 
+                    std::cout << " After ==> " << full_path << "\n";
+                    check = 1;
+                    break;
+                }
+            }
+        }
     }
+    std::cout << "Inside fun Full Path ---> " << full_path << "\n";
     return (full_path);
-}
+}*/
 
 bool            request::check_autoindex(std::map<std::string, std::string> loca_map)
 {
     std::map<std::string, std::string>::iterator it_e = loca_map.end();
     for (std::map<std::string, std::string>::iterator it_b = loca_map.begin(); it_b != it_e; it_b++)
     {
+
         if (!(*it_b).first.compare("autoindex"))
         {
+            std::cout << "first -> " << (*it_b).first << "\n";
+            std::cout << "--------\n";
             if (!(*it_b).second.compare("on"))
+            {
                 auto_index_stat = true;
+            }
             break;
         }
     }
@@ -212,7 +404,7 @@ std::string     request::delet_method(std::string path, server &server)
             return ( get_delet_resp(path,4));
         }
     }
-    return (" -- ");
+    return ("---");
 }
 
 void        request::fill_extentions()
@@ -254,7 +446,6 @@ std::streampos  request::get_fileLenth(std::string path)
     file.seekg(0, std::ios::end);
     std::streampos file_Size = file.tellg();
     file.seekg(0, std::ios::beg);
-    std::cout << "===== Be Attention Here === \n" ;
     std::cout << "Size === " << to_string(file_Size) << "\n";
     file.close();
     return file_Size;

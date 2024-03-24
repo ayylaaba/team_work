@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mallaoui <mallaoui@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ayylaaba <ayylaaba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/05 14:46:12 by ayylaaba          #+#    #+#             */
-/*   Updated: 2024/03/23 07:35:19 by mallaoui         ###   ########.fr       */
+/*   Updated: 2024/02/15 16:28:31 by ayylaaba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ void        server::mange_file(const char* file)
             if ((!str.compare("}") && s_token == 1 ))
             {
                 s.push_back(new server(cont, l));
+                cont.clear();
                 l.clear();
                 s_token = 0;
             }
@@ -103,7 +104,7 @@ int        server::parse_loca(std::ifstream& rd_cont, std::string &str_)
         check = "off";
         str_ = strtrim(str_);
         l_vec = isolate_str(str_, ' ');
-        // std::cout << "str --> " << str << "<--\n";
+        std::cout << "str --> " << str << "<--\n";
         if (!l_vec[0].compare("root") || !l_vec[0].compare("index") 
             || !l_vec[0].compare("limit_except") || !l_vec[0].compare("allow_methods") 
             || !l_vec[0].compare("autoindex") || !l_vec[0].compare("upload") 
@@ -142,7 +143,8 @@ int        server::parse_loca(std::ifstream& rd_cont, std::string &str_)
         if(!str_l_vec[0].compare("location"))
         {
             check_size(str_l_vec, 'l');
-            cont_l[str_l_vec[0]] = str_l_vec[1].substr(0, str_l_vec[1].size()); // store location with its path
+            loca_path[str_l_vec[0]] = str_l_vec[1].substr(0, str_l_vec[1].size());
+            cont_l[str_l_vec[0]]    = str_l_vec[1].substr(0, str_l_vec[1].size()); // store location with its path
             return 1 ;
         }
         else
@@ -190,7 +192,7 @@ int     server::check_exist(std::string path, char ch)
     }
     else
     {
-        // std::cout << "path == " << path << std::endl;
+        std::cout << "path == " << path << std::endl;
         std::FILE* file = std::fopen(path.c_str(), "r"); // most change the function
         if (file && path[path.length() - 1] != '/')
         {
@@ -231,6 +233,9 @@ int    server::parse_both(std::ifstream& rd_cont, std::string &str_)
                 if (s_vec[0].compare("{")) // you mean that is not { then it is a location
                 {
                     check_size(s_vec, 'l'); // check first loca's path
+                    std::cout << "loca ----------- " << s_vec[0] << " first root ------- " << s_vec[1] << "\n"; 
+                    loca_path[s_vec[0]] = s_vec[1];
+                    cont_l[s_vec[0]] = s_vec[1];
                     std::getline(rd_cont, str_);
                     str = strtrim(str);
                 }
@@ -322,7 +327,7 @@ void      server::handl_serv(std::vector<std::string> s)
     }
     else if (!s[0].compare("error_page"))
     {
-        // std::cout << "s[1] ===> " << s[1] << "<====\n";
+        std::cout << "s[1] ===> " << s[1] << "<====\n";
         if (check_exist(s[2], 'f') || check_permi(s[2]))
             print_err("syntaxt_error on the file");
     }
@@ -331,7 +336,7 @@ void      server::handl_serv(std::vector<std::string> s)
         for (size_t i = 1; i < s.size(); i++)
         {
             indexs.push_back(s[i]);
-            // std::cout << "----->>>> " << s[i] << "<<<<-------\n";
+            std::cout << "----->>>> " << s[i] << "<<<<-------\n";
             s[1] = s_root + "/" + s[i];
             if (check_exist(s[1], 'f') || check_permi(s[1]))
                 print_err("syntaxt_error on index");

@@ -2,16 +2,15 @@ NAME = webserve
 
 CXX = c++
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g3
 
 SRCS = 	main.cpp \
 		server.cpp \
 		location.cpp \
 		request.cpp \
-		Client.cpp \
+		fd_info.cpp \
 		get_method.cpp \
 		multplixing.cpp \
-		utils.cpp \
 		./post/for_body.cpp \
 		./post/for_header.cpp \
 		./post/get_extension.cpp \

@@ -41,6 +41,7 @@ class server : public location
         std::string                         check;
         std::map<int, int>                  req_time;
         std::vector<std::string>            indexs;
+        std::map<std::string, std::string>  loca_path;
 
         int                                 check_stat(std::string &stat_error);
         void                                mange_file(const char* file);

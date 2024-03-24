@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mallaoui <mallaoui@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ayylaaba <ayylaaba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/06 17:45:30 by ayylaaba          #+#    #+#             */
-/*   Updated: 2024/03/23 06:57:59 by mallaoui         ###   ########.fr       */
+/*   Updated: 2024/02/17 10:24:50 by ayylaaba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ void        location::handl_loca(std::map<std::string, std::string>& m, std::vec
             std::string path = root + "/" + (*it).second;
             if (check_exist(path, 'f') || check_permi(path))
             {
-                // std::cout << "-0-0-" << path << "\n";
+                std::cout << "-0-0-" << path << "\n";
                 print_err("error on the file");
             }
         }

@@ -1,12 +1,12 @@
 #include "get_method.hpp"
-#include "Client.hpp"
+#include "fd_info.hpp"
 
-extern std::map<int, Client> fd_maps;
+extern std::map<int, fd_info> fd_maps;
 
 int    get_method::get_mthod(int fd)
 {
     std::cout << "--------------- get_mthod --------------------------\n";
-    std::map<int, Client>::iterator it = fd_maps.find(fd);
+    std::map<int, fd_info>::iterator it = fd_maps.find(fd);
     std::string         response;
     std::string         extention_type;
     std::stringstream   StringSize;
@@ -18,6 +18,7 @@ int    get_method::get_mthod(int fd)
     std::cout <<  "\t ***************************** " << it->second.requst.uri << " *******************\n";
 
     check_path = check_exist(it->second.requst.uri);
+    std::cout << it->second.requst.auto_index_stat << "<--------------> here's the problem \n";
     if (it == fd_maps.end()) // print error
         exit(1);
     fileSize = get_fileLenth(it->second.requst.uri); // get full lenth of the file
@@ -39,7 +40,9 @@ int    get_method::get_mthod(int fd)
             char            buff[1024];
             int     x = it->second.read_f.read(buff, 1024).gcount();
             if (it->second.read_f.gcount() > 0)
+            {
                 send(fd, buff, x, 0);
+            }
             if (it->second.read_f.eof() || it->second.read_f.gcount() < 1024)
             {
                 it->second.rd_done = 1;
@@ -49,14 +52,17 @@ int    get_method::get_mthod(int fd)
     }
     else if (check_path == 2 && it->second.requst.auto_index_stat)
     {
+        
         if (it->second.requst.uri[it->second.requst.uri.length() -1] != '/')
         {
+            std::cout << it->second.requst.uri << "\n";
             response = get_header(301, extention_type, StringSize.str(), it->second);
             send(fd, response.c_str(), response.size(), 0);
             return 1;
         }
         buff_s = generat_html_list(it->second.requst.uri.substr(0, it->second.requst.uri.find_last_of("/")));
         size << buff_s.size();
+
         if (!it->second.res_header)
         {
             response = get_header(1, "text/html", size.str(), it->second);
@@ -129,7 +135,7 @@ std::streampos  get_method::get_fileLenth(std::string path)
     return file_Size;
 }
 
-std::string      get_method::get_header(int wich, std::string exten, std::string lentg, Client& fd_inf)
+std::string      get_method::get_header(int wich, std::string exten, std::string lentg, fd_info& fd_inf)
 {
     std::string response;
     if (wich == 0)
@@ -157,6 +163,7 @@ std::string      get_method::get_header(int wich, std::string exten, std::string
     }
     else if (wich == 301)
     {
+        std::cout << "hi hhhhahahahahah \n";
         std::string     path_with_slash = fd_inf.requst.path + "/";
 
         response = "HTTP/1.1 301 Moved Permanently\r\n";
@@ -232,8 +239,10 @@ int     get_method::check_exist(const std::string& path)
     {
         if (S_ISREG(fileStat.st_mode)) 
             return 1; // Path exists and is a regular file
-        if (S_ISDIR(fileStat.st_mode)) 
+        if (S_ISDIR(fileStat.st_mode))
+        {
             return 2; // Path exists and is a directory
+        }
     }
     return 0; // Path does not exist
 }
