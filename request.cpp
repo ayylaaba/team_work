@@ -78,13 +78,9 @@ std::string     request::get_full_uri(std::string path, server &server)
                 if ((!(*itb).first.compare("location") &&  !(*itb).second.substr(1).compare(loca_fldr)) /*|| 
                     (x && !(*itb).second.compare("/"))*/)
                 {
-                    // std::cout << "88888888888888888888\n";
-                    // exit(10);
                     std::cout << "check location == " << (*itb).first << " check Second == " << (*itb).second << "\n";
                     found = true;
                     auto_index_stat = check_autoindex(server.s[i]->l[j]->cont_l);
-                    // std::cout << "hhhhhhhhhhhhhh\n";
-                    // exit(3);
                     std::map<std::string, std::string>::iterator it_b = server.s[i]->l[j]->cont_l.find("root");
                     if (!rest_fldr.empty()) // rest 3amr
                     {
@@ -130,6 +126,12 @@ std::string     request::get_full_uri(std::string path, server &server)
             std::cout << "found dkhaaaaaaaaaaaaaaaal \n";
             std::map<std::string, std::string>::iterator it_ = root_map.find("root");
             auto_index_stat = check_autoindex(root_map);
+            if (!loca_fldr.compare("favicon.ico"))
+            {
+                check = 1;
+                std::cout << "full ---->> " << full_path << "\n"; 
+                break;
+            }
             if (!full_rest.empty()) // rest 3amr
             {
                 std::cout << loca_fldr << "<----/data\n";

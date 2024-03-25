@@ -12,6 +12,7 @@ SRCS = 	main.cpp \
 		get_method.cpp \
 		multplixing.cpp \
 		utils.cpp \
+		delete.cpp \
 		./post/for_body.cpp \
 		./post/for_header.cpp \
 		./post/get_extension.cpp \

@@ -99,13 +99,13 @@ void        multplixing::lanch_server(server parse)
     }
 
     while (true) {
+            signal(SIGPIPE, SIG_IGN); // magic this line ignore sigpip when you write to close fd the program exit by sigpip sign
             std::string buffer;
             std::vector<int>::iterator it;
 
             signal(SIGPIPE, SIG_IGN); // magic this line ignore sigpip when you write to close fd the program exit by sigpip sign
 
             int num = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-
             for (int i = 0; i < num; i++) {
                 if ((it = std::find(serverSocket.begin(), serverSocket.end(), events[i].data.fd)) != serverSocket.end()) {
                     std::cout << "New Client Connected\n";
@@ -113,7 +113,7 @@ void        multplixing::lanch_server(server parse)
 
                     struct epoll_event envts_client;
                     envts_client.data.fd = client_socket;
-                    envts_client.events = EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLRDHUP;
+                    envts_client.events = EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLRDHUP | EPOLLHUP ;
                     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &envts_client) == -1){
                         close(client_socket);
                         perror("Issue In Adding Client To Epoll");
