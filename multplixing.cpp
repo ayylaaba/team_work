@@ -101,6 +101,9 @@ void        multplixing::lanch_server(server parse)
     while (true) {
             std::string buffer;
             std::vector<int>::iterator it;
+
+            signal(SIGPIPE, SIG_IGN); // magic this line ignore sigpip when you write to close fd the program exit by sigpip sign
+
             int num = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
 
             for (int i = 0; i < num; i++) {
@@ -123,13 +126,15 @@ void        multplixing::lanch_server(server parse)
                 else {
                     std::map<int, Client>::iterator it_fd = fd_maps.find(events[i].data.fd);
                     std::cout << "Client with an event :" << events[i].data.fd << std::endl;
-                    if (events[i].events & EPOLLRDHUP) {
+                    if (events[i].events & EPOLLRDHUP || events[i].events & EPOLLERR  || events[i].events & EPOLLHUP) 
+                    {
                         std::cout << "peer shutdown detected\n";
+                        fd_maps.erase(events[i].data.fd); // remove it from map  
                         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
                         close(events[i].data.fd);
                         continue;
                     }
-                    if (events[i].events & EPOLLIN)
+                    else if (events[i].events & EPOLLIN)
                     {
                         std::cout << "FD READY TO READ -_- = " << events[i].data.fd << " \n";
                         buffer.resize(BUFFER_SIZE);
