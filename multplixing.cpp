@@ -6,46 +6,30 @@ std::map<int, Client>  fd_maps;
 int flag = 0;
 
 
+in_addr_t multplixing::convertIpv4toBinary(const std::string& ip) {
+    unsigned int parts[4];
+    if (sscanf(ip.c_str(), "%u.%u.%u.%u", &parts[0], &parts[1], &parts[2], &parts[3]) != 4) {
+        std::cerr << "Invalid IP address" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < 4; i++) {
+        if (parts[i] > 255) {
+            std::cerr << "Invalid IP address" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    uint32_t addr = (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3];
+    return htonl(addr);
+}
+
+
+
+
 void        multplixing::lanch_server(server parse)
 {
     int bytesRead;
     int respo;
     request     rq;
-
-    // if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    //     perror("Socket creation failed");
-    //     exit(EXIT_FAILURE);
-    // }
-
-    // // Initialize server address structure
-    // sockaddr_in serverAddr;
-    // serverAddr.sin_family = AF_INET;
-    // serverAddr.sin_port = htons(8080);
-    // serverAddr.sin_addr.s_addr = INADDR_ANY;
-    // int sp = 1;
-    // // Bind the socket
-    // setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR|SO_REUSEPORT, &sp, sizeof(sp));
-    // if (bind(serverSocket, reinterpret_cast<struct sockaddr *>(&serverAddr), sizeof(serverAddr)) == -1) 
-    // {
-    //     perror("Bind failed");
-    //     exit(EXIT_FAILURE);
-    // }
-
-    // // Listen for incoming connections
-    // if (listen(serverSocket, 5) == -1) {
-    //     perror("Listen failed");
-    //     exit(EXIT_FAILURE);
-    // }
-
-    // std::cout << "Server is listening on port 8080...\n";
-
-    // epoll_fd = epoll_create(5);
-    // struct epoll_event envts;
-    // envts.data.fd = serverSocket;
-    // envts.events = EPOLLIN;
-
-    // epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverSocket, &envts);
-
     std::vector<server*>::iterator it;
 
     epoll_fd = epoll_create(5);
@@ -63,7 +47,9 @@ void        multplixing::lanch_server(server parse)
 
         sock_info.sin_family = AF_INET;
         sock_info.sin_port = htons(string_to_int((*it)->cont["listen"]));
-        sock_info.sin_addr.s_addr = INADDR_ANY;
+        uint32_t ip = convertIpv4toBinary((*it)->cont["host"]);
+        sock_info.sin_addr.s_addr = ip;
+        std::cout << "Ip Address : " << inet_ntoa(sock_info.sin_addr) << std::endl;
         int sp = 1;
         setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR|SO_REUSEPORT, &sp, sizeof(sp));
         if (bind(sockfd, (struct sockaddr *)&sock_info, sizeof(sock_info))) {
