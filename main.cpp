@@ -33,9 +33,6 @@ int main(int ac, char **av)
         parse.print_err("Argement Not Valid");
     
     parse.mange_file(av[1]);
-
-    std::cout << "\n\t---> Done <---\t\n";
-    exit(12);
     
     mlp.lanch_server();
 
